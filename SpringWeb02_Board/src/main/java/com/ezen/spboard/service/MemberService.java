@@ -17,5 +17,20 @@ public class MemberService {
 		SpMember sdto = mdao.getMember(id);
 		return sdto;
 	}
+
+	public int confirmID(String id) {
+		//int result = mdao.confrimID(id);
+		//return result;
+		return mdao.confirmID(id);
+	}
+
+	public int insertMember(SpMember sm) {
+		return mdao.insertMember(sm);
+	}
+
+	public int updateMember(SpMember sm) {
+		
+		return mdao.updateMember(sm);
+	}
 	
 }
