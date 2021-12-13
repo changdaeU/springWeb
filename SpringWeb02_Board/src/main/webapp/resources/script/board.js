@@ -69,3 +69,36 @@ function editCheck(){
 		return true;
 	}
 }
+
+function boardCheck(){
+	if(document.frm.pw.value.length==0){
+		alert("비밀번호를 적어주세요 수정 삭제시 사용됩니다.");
+		frm.pw.focus();
+		return false;
+	}else if(document.frm.title.value.length==0){
+		alert("게시물의 제목을 적어주세요");
+		frm.title.focus();
+		return false;
+	}else if(document.frm.content.value==""){
+		alert("내용을 입력해 주세요");
+		frm.content.focus();
+		return false;
+	}else{
+		return true;
+	}
+}
+
+function reply_Check(){
+	if(document.frm2.reply.value.length==0){
+		alert("댓글을 입력하세요");
+		frm2.reply.focus();
+		return false;
+	}else{
+		return true;
+	}
+}
+
+function open_win(url, name){
+	window.open(url, name, "toolbar=no, menubar=no, scrollbars=no, "
+			+ " resizable=no, width=500, height=230");
+}

@@ -59,12 +59,8 @@
 				</c:if>&nbsp;</td>
 		</tr>
 	</c:forEach>
-		
-		
 </table>
 </form>
 </div>
-
-
 </body>
 </html>

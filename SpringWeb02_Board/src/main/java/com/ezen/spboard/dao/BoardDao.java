@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.ezen.spboard.dto.Paging;
 import com.ezen.spboard.dto.ReplyVO;
 import com.ezen.spboard.dto.SpBoard;
 import com.ezen.spboard.util.DataBaseManager;
@@ -22,14 +23,21 @@ public class BoardDao {
 	
 	@Autowired
 	DataBaseManager dbm;
-	 public ArrayList<SpBoard> selectBoard() {
+	 public ArrayList<SpBoard> selectBoard(Paging paging) {
       ArrayList<SpBoard> list = new ArrayList<SpBoard>();
-      String sql = "select * from board order by num desc";
+      //String sql = "select * from board order by num desc";
+      String sql = "select * from ("
+      		+ " select * from ("
+      		+ " select rownum as rn, B.* from "
+      		+ "((select * from board order by num desc) B)"
+      		+ ") where rn >= ? "
+      		+ ") where rn <= ?";
       con = dbm.getConnection();
       try {
          pstmt = con.prepareStatement(sql);
-         rs = pstmt.executeQuery();
-         
+         pstmt.setInt(1, paging.getStartNum());
+         pstmt.setInt(2, paging.getEndNum());
+         rs = pstmt.executeQuery();         
          while(rs.next()) {
             SpBoard sb = new SpBoard();
             sb.setNum(rs.getInt("num"));
@@ -42,12 +50,22 @@ public class BoardDao {
             sb.setWritedate(rs.getTimestamp("writedate"));
             sb.setReplycnt(rs.getInt("replycnt"));
             sb.setImagename(rs.getString("imgfilename"));
+            
+            String sql2 = "select count(*) as cnt from reply where boardnum=?";
+            int num = rs.getInt("num");
+            PreparedStatement pstmt2 = con.prepareStatement(sql2);
+            pstmt2.setInt(1, num);
+            ResultSet rs2 = pstmt2.executeQuery();
+            if(rs2.next())sb.setReplycnt(rs2.getInt("cnt"));
+            else sb.setReplycnt(0);
+            
+            pstmt2.close();
+            rs2.close();
+            
             list.add(sb);
          }
-      }catch(SQLException e) {
-         e.printStackTrace();
-      }finally {
-         dbm.close(con, pstmt, rs);
+      }catch(SQLException e) { e.printStackTrace();
+      }finally {  dbm.close(con, pstmt, rs);
       }
       return list;
    }
@@ -121,6 +139,74 @@ public class BoardDao {
 	      }catch(SQLException e) {e.printStackTrace();
 	      }finally { dbm.close(con, pstmt, rs); }
 		
+	}
+	public void deleteReply(String num) {
+		String sql = "delete from reply where num=?";
+		con = dbm.getConnection();
+	      try {
+	         pstmt = con.prepareStatement(sql);
+	         pstmt.setInt(1, Integer.parseInt(num));
+	         pstmt.executeUpdate();
+	      }catch(SQLException e) {e.printStackTrace();
+	      }finally { dbm.close(con, pstmt, rs); }
+		
+	}
+	public void insertBoard(SpBoard sb) {
+		String sql = "insert into board(num, pass, userid, email, title, content, imgfilename)"
+				+ " values(board_seq.nextVal, ?,?,?,?,?,?)";
+		
+	      try {
+	    	 con = dbm.getConnection();
+	         pstmt = con.prepareStatement(sql);
+	         pstmt.setString(1, sb.getPass());
+	         pstmt.setString(2, sb.getUserid());
+	         pstmt.setString(3, sb.getEmail());
+	         pstmt.setString(4, sb.getTitle());
+	         pstmt.setString(5, sb.getContent());
+	         pstmt.setString(6, sb.getImagename());
+	         pstmt.executeUpdate();
+	      }catch(SQLException e) {e.printStackTrace();
+	      }finally { dbm.close(con, pstmt, rs); }
+
+	}
+	public void boardUpdate(SpBoard sb) {
+		String sql = "update board set pass=?, userid=?, email=?, title=?, content=?, "
+				+ " imgfilename=? where num=?";
+		con = dbm.getConnection();
+		try {
+			pstmt = con.prepareStatement(sql);
+		    pstmt.setString(1, sb.getPass());
+		    pstmt.setString(2, sb.getUserid());
+		    pstmt.setString(3, sb.getEmail());
+		    pstmt.setString(4, sb.getTitle());
+		    pstmt.setString(5, sb.getContent());
+		    pstmt.setString(6, sb.getImagename());
+		    pstmt.setInt(7, sb.getNum());
+		    pstmt.executeUpdate();
+		}catch(SQLException e) {e.printStackTrace();
+	    }finally { dbm.close(con, pstmt, rs); }
+	}
+	public void boardDelete(String num) {
+		String sql = "delete from board where num =?";
+		con = dbm.getConnection();
+		try {
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(num));
+			pstmt.executeUpdate();
+		}catch(SQLException e) {e.printStackTrace();
+	    }finally { dbm.close(con, pstmt, rs); }
+	}
+	public int getAllcount() {
+		int count = 0;
+		String sql = "select count(*) as count from board";
+		con = dbm.getConnection();
+		try {
+			pstmt = con.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			if(rs.next())count = rs.getInt("count");
+		}catch(SQLException e) {e.printStackTrace();
+	    }finally { dbm.close(con, pstmt, rs); }
+		return count;
 	}
 
 }

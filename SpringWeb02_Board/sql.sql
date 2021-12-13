@@ -11,7 +11,7 @@ create table spmember(
 select * from spmember
 select * from board order by num desc
 select * from reply;
-
+ 
 insert into spmember values('scott','1234','박지성', '010', '6400','6068', 'hong@naver.com');
 insert into spmember values('hong1','1234','홍길동', '010', '1111','2222', 'hong1@naver.com');
 insert into spmember values('hong2','1234','홍길남', '010', '2222','3333', 'hong2@naver.com');
