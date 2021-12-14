@@ -1,5 +1,4 @@
 
-
 DROP TABLE member CASCADE CONSTRAINTS;
 DROP TABLE product CASCADE CONSTRAINTS;
 DROP TABLE worker CASCADE CONSTRAINTS;
@@ -278,9 +277,6 @@ select * from new_pro_view;
 select * from qna;
 
 select count(*) from address;
-
-
-
 
 
 select distinct oseq from order_view where id='scott' and result='1' order by oseq desc

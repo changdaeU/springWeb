@@ -27,7 +27,7 @@
 		<beans:property name="user" value="scott" />
 		<beans:property name="password" value="tiger" />
 		<beans:property name="maxPoolSize" value="200" />
-		<beans:property name="chechkoutTimeout" value="60000" />
+		<beans:property name="checkoutTimeout" value="60000" />
 		<beans:property name="maxIdleTime" value="1800" />
 		<beans:property name="idleConnectionTestPeriod" value="600" />
 	</beans:bean>

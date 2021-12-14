@@ -22,7 +22,7 @@ function go_next(){
 		alert('약관에 동의하셔야 회원 가입이 가능합니다.');
 	}else{
 		//  스크립트 명령으로 폼의 액션 설정하고 submit  실행
-		document.contractFrm.action ="shop.do?command=joinForm";
+		document.contractFrm.action ="joinForm";
 		document.contractFrm.submit(); 
 	}
 }
@@ -38,7 +38,7 @@ function idcheck(){
 		documnet.joinForm.id.focus();
 		return;
 	}
-	var url = "shop.do?command=idCheckForm&id=" + document.joinForm.id.value;
+	var url = "idCheckForm?id=" + document.joinForm.id.value;
 	var opt = "toolbar=no, menubar=no, resizable=no, width=500, height=250";
 	window.open(url, "IdCheck", opt);
 }
@@ -46,20 +46,10 @@ function idcheck(){
 
 
 
-function idok(userid){
-	opener.joinForm.id.value=userid;
-	opener.joinForm.reid.value=userid;
-	self.close();
-}
-
-
-
-
-
 
 
 function post_zip(){
-	var url = "shop.do?command=findZipNum";
+	var url = "findZipNum";
 	var opt = "toolbar=no, menubar=no, scrollbars=no, resizable=no, width=550,";
 	opt = opt + " height=300, top=300, left=300";
 	window.open( url, "우편번호 찾기", opt );
@@ -91,7 +81,7 @@ function go_save(){
 	    alert("이메일을 입력해 주세요.");	   
 	    document.joinForm.email.focus();
 	} else{
-		document.joinForm.action = "shop.do";
+		document.joinForm.action = "join";
 	    document.joinForm.submit();
 	}
 }
@@ -117,7 +107,7 @@ function go_update(){
 	    alert("이메일을 입력해 주세요.");
 	    document.joinForm.email.focus();
 	}else {
-	    document.joinForm.action = "shop.do";
+	    document.joinForm.action = "memberUpdate";
 	    document.joinForm.submit();
 	}
 }
