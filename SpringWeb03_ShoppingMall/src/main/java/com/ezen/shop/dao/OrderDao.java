@@ -69,7 +69,7 @@ public class OrderDao {
 				ovo.setAddress(rs.getString("address"));
 				ovo.setPhone(rs.getString("phone"));
 				ovo.setPseq(rs.getInt("pseq"));
-				ovo.setQuantity(rs.getInt("oseq"));
+				ovo.setQuantity(rs.getInt("quantity"));
 				ovo.setPname(rs.getString("pname"));
 				ovo.setPrice2(rs.getInt("price2"));
 				ovo.setResult(rs.getString("result"));
