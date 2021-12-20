@@ -1,5 +1,6 @@
 package com.ezen.shop.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -9,14 +10,19 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.ezen.shop.dto.OrderVO;
 import com.ezen.shop.dto.Paging;
 import com.ezen.shop.dto.ProductVO;
+import com.ezen.shop.dto.QnaVO;
 import com.ezen.shop.service.AdminService;
 import com.ezen.shop.service.ProductService;
 import com.ezen.shop.service.QnaService;
+import com.oreilly.servlet.MultipartRequest;
+import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 
 @Controller
 public class AdminController {
@@ -72,7 +78,10 @@ public class AdminController {
 			mav.setViewName("redirect:/admin");
 		}else {
 			int page = 1;
-			if(request.getParameter("page")!=null) {
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("page")!=null) {
 				page = Integer.parseInt(request.getParameter("page"));
 				session.setAttribute("page", page);
 			}else if (session.getAttribute("page")!=null) {
@@ -83,7 +92,10 @@ public class AdminController {
 			}
 			
 			String key = "";
-			if(request.getParameter("key")!=null) {
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("key")!=null) {
 				key = request.getParameter("key");
 				session.setAttribute("key", key);
 			}else if (session.getAttribute("key")!=null) {
@@ -126,4 +138,188 @@ public class AdminController {
 		return mav;
 	}
 	
+	@RequestMapping("productWriteForm")
+	public ModelAndView product_Write_Form(HttpServletRequest request) {
+		String kindList[] = {"Heels", "Boots", "Sandals", "Sneakers", "Slipers", "Sale"};
+		ModelAndView mav = new ModelAndView();
+		mav.addObject("kindList",kindList);
+		mav.setViewName("admin/product/productWriteForm");
+		return mav;
+	}
+	
+	@RequestMapping(value="productWrite", method=RequestMethod.POST)
+	public String product_Write(HttpServletRequest request) {
+		String savePath = context.getRealPath("resources/product_images");
+		ProductVO pvo = new ProductVO();
+		
+		// 전달 파라미터를 pvo에 넣고 서비스의 insertProduct에 전달
+		MultipartRequest multi;
+		try {
+			multi = new MultipartRequest(
+					request, savePath , 5*1024*1024,  "UTF-8", new DefaultFileRenamePolicy() );
+			pvo.setKind(multi.getParameter("kind"));
+			pvo.setContent(multi.getParameter("content"));
+			pvo.setName(multi.getParameter("name"));
+			pvo.setPrice1(Integer.parseInt(multi.getParameter("price1")));
+			pvo.setPrice2(Integer.parseInt(multi.getParameter("price2")));
+			pvo.setPrice3(Integer.parseInt(multi.getParameter("price2"))-Integer.parseInt(multi.getParameter("price1")));
+			pvo.setImage(multi.getFilesystemName("image"));
+		} catch (IOException e) {e.printStackTrace();
+		}		
+		
+		as.insertProduct(pvo);
+		return "redirect:/productList";
+	}
+	
+	@RequestMapping("productUpdateForm")
+	public ModelAndView product_Update_Form(HttpServletRequest request, @RequestParam("pseq") String pseq) {
+		ModelAndView mav = new ModelAndView();
+		ProductVO pvo = ps.getProduct(pseq);
+		mav.addObject("productVO", pvo);
+		String kindList[] = {"Heels", "Boots", "Sandals", "Sneakers", "Slipers", "Sale"};
+		mav.addObject("kindList", kindList);
+		mav.setViewName("admin/product/productUpdate");
+		return mav;
+	}
+	
+	@RequestMapping("productUpdate")
+	public String product_Update(HttpServletRequest request) {
+		ProductVO pvo = new ProductVO();
+		int pseq=0;
+		String savePath = context.getRealPath("resources/product_images");
+		MultipartRequest multi;
+		try {
+			multi = new MultipartRequest(
+					request, savePath , 5*1024*1024,  "UTF-8", new DefaultFileRenamePolicy() );
+			pvo.setPseq(Integer.parseInt(multi.getParameter("pseq")));
+			pseq = Integer.parseInt(multi.getParameter("pseq"));
+			pvo.setKind(multi.getParameter("kind"));
+			pvo.setContent(multi.getParameter("content"));
+			pvo.setName(multi.getParameter("name"));
+			pvo.setPrice1(Integer.parseInt(multi.getParameter("price1")));
+			pvo.setPrice2(Integer.parseInt(multi.getParameter("price2")));
+			pvo.setPrice3(Integer.parseInt(multi.getParameter("price2"))
+					-Integer.parseInt(multi.getParameter("price1")));
+			pvo.setUseyn(multi.getParameter("useyn"));
+			pvo.setBestyn(multi.getParameter("bestyn"));
+			if(multi.getFilesystemName("image")==null) // 수정하려는 이미지가 없을 경우 이전 이미지로 수정대체
+				pvo.setImage(multi.getParameter("oldfileimage"));
+			else pvo.setImage(multi.getFilesystemName("image"));
+		} catch (IOException e) {e.printStackTrace();
+		}		
+		as.updateProduct(pvo);
+		return "redirect:/adminProductDetail?pseq="+pseq;
+	}
+	
+	@RequestMapping("/adminOrderList")
+	public ModelAndView admin_Order_List(HttpServletRequest request) {
+		ModelAndView mav = new ModelAndView();
+		HttpSession session = request.getSession();
+		String id = (String)session.getAttribute("workId");
+		if(id == null) {
+			mav.setViewName("redirect:/admin");
+		}else {
+			int page = 1;
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("page")!=null) {
+				page = Integer.parseInt(request.getParameter("page"));
+				session.setAttribute("page", page);
+			}else if (session.getAttribute("page")!=null) {
+				page =(Integer)session.getAttribute("page");
+			}else {
+				page=1;
+				session.removeAttribute("page");
+			}
+			
+			String key = "";
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("key")!=null) {
+				key = request.getParameter("key");
+				session.setAttribute("key", key);
+			}else if (session.getAttribute("key")!=null) {
+				key =(String)session.getAttribute("key");
+			}else {
+				session.removeAttribute("key");
+				key = "";
+			}
+			
+			Paging paging = new Paging();
+			paging.setPage(page);
+			
+			int count = as.getAllCount("order_view", "mname", key);
+			paging.setTotalCount(count);
+			
+			// order_view에서 전체 주문을 조회해서
+			List<OrderVO> list = as.listOrderAll(paging, key);
+			mav.addObject("orderList",list);
+			// orderList.jsp로 이동
+			request.setAttribute("paging",paging);
+			request.setAttribute("key",key);
+			mav.setViewName("admin/order/orderList");
+		}
+		return mav;
+	}
+	@RequestMapping("/orderUpdateResult")
+	public String order_Update_Result(@RequestParam("result") int [] resultArr) {
+		for(int odseq:resultArr)
+			as.orderUpdateResult(odseq);
+		
+		return "redirect:/adminOrderList";
+	}
+	@RequestMapping("/adminQnaList")
+	public ModelAndView admin_Qna_List(HttpServletRequest request) {
+		ModelAndView mav = new ModelAndView();
+		HttpSession session = request.getSession();
+		String id = (String)session.getAttribute("workId");
+		if(id == null) {
+			mav.setViewName("redirect:/admin");
+		}else {
+			int page = 1;
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("page")!=null) {
+				page = Integer.parseInt(request.getParameter("page"));
+				session.setAttribute("page", page);
+			}else if (session.getAttribute("page")!=null) {
+				page =(Integer)session.getAttribute("page");
+			}else {
+				page=1;
+				session.removeAttribute("page");
+			}
+			
+			String key = "";
+			if(request.getParameter("first") != null && request.getParameter("first").equals("y")) {
+				page=1;
+				session.removeAttribute("page");
+			}else if(request.getParameter("key")!=null) {
+				key = request.getParameter("key");
+				session.setAttribute("key", key);
+			}else if (session.getAttribute("key")!=null) {
+				key =(String)session.getAttribute("key");
+			}else {
+				session.removeAttribute("key");
+				key = "";
+			}
+			
+			Paging paging = new Paging();
+			paging.setPage(page);
+			
+			int count = as.getAllCount("qna", "subject", key);
+			paging.setTotalCount(count);
+			
+			// order_view에서 전체 주문을 조회해서
+			List<QnaVO> list = as.listQnaAll(paging, key);
+			mav.addObject("qnaList",list);
+			// orderList.jsp로 이동
+			request.setAttribute("paging",paging);
+			request.setAttribute("key",key);
+			mav.setViewName("admin/qna/qnaList");
+		}
+		return mav;
+	}
 }

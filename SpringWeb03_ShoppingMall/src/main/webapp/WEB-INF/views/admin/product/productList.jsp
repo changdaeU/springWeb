@@ -11,7 +11,7 @@
             상품명<input type="text" name="key" value="${key}">
             <input class="btn" type="button" name="btn_search" value="검색" onClick="go_search();">
             <input class="btn" type="button" name="btn_total" value="전체보기 " onClick="go_total();">
-            <input class="btn" type="button" name="btn_mod" value="상품 등록하기 " onClick="go_mod();">
+            <input class="btn" type="button" name="btn_mod" value="상품 등록하기 " onClick="go_wrt();">
                </td></tr>
    </table>
    
@@ -49,4 +49,4 @@
   
 </article>
 
-	<%@ include file="/resources/admin/footer.jsp"%>
+<%@ include file="/resources/admin/footer.jsp"%>

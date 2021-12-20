@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ezen.shop.dao.AdminDao;
+import com.ezen.shop.dto.OrderVO;
 import com.ezen.shop.dto.Paging;
 import com.ezen.shop.dto.ProductVO;
+import com.ezen.shop.dto.QnaVO;
 
 @Service
 public class AdminService {
@@ -26,6 +28,28 @@ public class AdminService {
 	public int getAllCount(String tableName, String fieldName, String key) {
 		
 		return adao.getAllCount(tableName, fieldName, key);
+	}
+
+	public void insertProduct(ProductVO pvo) {
+		adao.insertProduct(pvo);
+		
+	}
+
+	public void updateProduct(ProductVO pvo) {
+		adao.updateProduct(pvo);
+		
+	}
+
+	public List<OrderVO> listOrderAll(Paging paging, String key) {
+		return adao.listOrderAll(paging, key);
+	}
+
+	public void orderUpdateResult(int odseq) {
+		adao.orderUpdateResult(odseq);
+	}
+
+	public List<QnaVO> listQnaAll(Paging paging, String key) {
+		return adao.listQnaAll(paging, key);
 	}
 	
 }
